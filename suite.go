@@ -3,7 +3,7 @@ package zardoz
 import "fmt"
 import "github.com/fatih/color"
 
-type TestFunction func(Test) Test
+type TestFunction func(*Test) 
 
 type Suite struct {
     runContexts []RunContext
@@ -29,7 +29,7 @@ func printResultFromRanContexts(ranContexts []RunContext) {
         if !rc.ranTest.IsSuccessful() {
             errorCount++
 
-            color.Yellow(fmt.Sprintf("%d) %s", errorCount, rc.contextName))
+            color.Yellow(fmt.Sprintf("  %d) %s", errorCount, rc.contextName))
             rc.printErrorHints()
         } else {
             successCount++
@@ -59,14 +59,18 @@ func printResultFromRanContexts(ranContexts []RunContext) {
 }
 
 func executeContext(rc RunContext) RunContext {
-     t := Test {
+     rc.ranTest = Test {
         AssertCount: 0,
         Passes: 0,
         Failures: 0,
     }
 
-    ranTest := rc.testFunction(t)
-    rc.ranTest = ranTest
+    rc.testFunction(&rc.ranTest)
+
+    for _, c := range rc.ranTest.AsyncAssertions {
+        <- c
+    }
+
     return rc
 }
 
@@ -74,7 +78,6 @@ func (s Suite) Run() {
     ranContexts := []RunContext{}
 
     fmt.Println("\nRunning...")
-    fmt.Print()
     for _, rc := range s.runContexts {
         ranContext := executeContext(rc)
 

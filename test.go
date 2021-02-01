@@ -5,6 +5,7 @@ import "fmt"
 // import "strings"
 import "time"
 import "runtime"
+// import "sync"
 
 type AssertFunction func() bool
 
@@ -12,41 +13,11 @@ type Test struct {
     AssertCount int
     Passes int
     Failures int
+    AsyncAssertions []chan bool
     Errors []Error
 }
 
-// func (t Test) printResult() {
-//     for _, err := range t.Errors {
-//         fmt.Println()
-//         color.Red(err.errMessage)
-//         fmt.Print(err.preview)
-//     }
-// }
-
-// func (t Test) printFailingLines() {
-//     for _, err := range t.Errors {
-//         color.Red(err.failingLine)
-//     }
-// }
-
-func (t *Test) Assert(expectation bool) {
-    t.AssertCount++
-
-    if expectation {
-        t.Passes++
-    } else {
-        t.handleFailure("Expected true when evaluating:");
-        t.Failures++
-    }
-}
-
-func (t Test) IsSuccessful() bool {
-    return t.Failures == 0
-}
-
-func (t *Test) AssertAsync(assertFunction AssertFunction, timeOutMilliseconds int) {
-    t.AssertCount++
-
+func doAsyncTest(assertFunction AssertFunction, timeOutMilliseconds int) bool {
     result := false
     loopCount := 0
 
@@ -62,13 +33,59 @@ func (t *Test) AssertAsync(assertFunction AssertFunction, timeOutMilliseconds in
         loopCount++
     }
 
-    if result {
+    return result
+}
+
+func (t *Test) Assert(expectation bool) {
+    t.AssertCount++
+
+    if expectation {
         t.Passes++
     } else {
-        t.handleFailure(fmt.Sprintf("Never returned true after %dms when evaluating:", timeOutMilliseconds));
+        t.addError(buildErrorFromCaller("Expected true when evaluating:"))
         t.Failures++
     }
 }
+
+func (t Test) IsSuccessful() bool {
+    return t.Failures == 0
+}
+
+func (t *Test) AssertSync(assertFunction AssertFunction, timeOutMilliseconds int) {
+    t.AssertCount++
+
+    if doAsyncTest(assertFunction, timeOutMilliseconds) {
+        t.Passes++
+    } else {
+        errMessage := fmt.Sprintf("Never returned true after %dms when evaluating:", timeOutMilliseconds)
+        t.addError(buildErrorFromCaller(errMessage))
+        t.Failures++
+    }
+}
+
+
+func (t *Test) AssertAsync(assertFunction AssertFunction, timeOutMilliseconds int) {
+    t.AssertCount++
+
+    c := make(chan bool)
+
+    t.addAsyncAssertion(c)
+
+    preemptiveErr := buildErrorFromCaller(fmt.Sprintf("Never returned true after %dms when evaluating:", timeOutMilliseconds))
+
+    go func(c chan bool) {
+        if doAsyncTest(assertFunction, timeOutMilliseconds) {
+            t.Passes++
+        } else {
+            t.addError(preemptiveErr)
+            t.Failures++
+        }
+
+        c <- true
+    }(c)
+}
+
+
 
 func (t *Test) handleFailure(errMessage string) {
      _, fn, line, _ := runtime.Caller(2)
@@ -85,4 +102,19 @@ func (t *Test) handleFailure(errMessage string) {
 
 func (t *Test) addError(err Error) {
     t.Errors = append(t.Errors, err)
+}
+
+func (t *Test) addAsyncAssertion(c chan bool) {
+    t.AsyncAssertions = append(t.AsyncAssertions, c)
+}
+
+func buildErrorFromCaller(errMessage string) Error {
+     _, fn, line, _ := runtime.Caller(2)
+    code := readCode(fn, line, line + 3)
+
+    return Error { 
+        preview: code, 
+        errMessage: errMessage,
+        failingLine: fmt.Sprintf("Assertion failed %s:%d", fn, line),
+    }
 }
