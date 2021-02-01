@@ -1,7 +1,7 @@
 package zardoz
 
 import "fmt"
-import "github.com/fatih/color"
+// import "github.com/fatih/color"
 // import "strings"
 import "time"
 import "runtime"
@@ -15,19 +15,19 @@ type Test struct {
     Errors []Error
 }
 
-func (t Test) printResult() {
-    for _, err := range t.Errors {
-        fmt.Println()
-        color.Red(err.errMessage)
-        fmt.Print(err.preview)
-    }
-}
+// func (t Test) printResult() {
+//     for _, err := range t.Errors {
+//         fmt.Println()
+//         color.Red(err.errMessage)
+//         fmt.Print(err.preview)
+//     }
+// }
 
-func (t Test) printFailingLines() {
-    for _, err := range t.Errors {
-        color.Red(err.failingLine)
-    }
-}
+// func (t Test) printFailingLines() {
+//     for _, err := range t.Errors {
+//         color.Red(err.failingLine)
+//     }
+// }
 
 func (t *Test) Assert(expectation bool) {
     t.AssertCount++
@@ -41,7 +41,7 @@ func (t *Test) Assert(expectation bool) {
 }
 
 func (t Test) IsSuccessful() bool {
-    return t.Failures > 0
+    return t.Failures == 0
 }
 
 func (t *Test) AssertAsync(assertFunction AssertFunction, timeOutMilliseconds int) {
