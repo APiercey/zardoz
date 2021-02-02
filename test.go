@@ -15,20 +15,14 @@ type Test struct {
     Errors []Error
 }
 
-func doAsyncTest(assertFunction AssertFunction, timeOutMilliseconds int) bool {
+func doLoopedTest(assertFunction AssertFunction, timeOutMilliseconds int) bool {
     result := false
-    loopCount := 0
 
-    for range time.Tick(10 * time.Millisecond) {
-        if loopCount > (timeOutMilliseconds / 10) {
-            break
-        }
+    for start := time.Now(); time.Since(start) < time.Duration(timeOutMilliseconds) * time.Millisecond; {
         if assertFunction() { 
             result = true
             break
         } 
-
-        loopCount++
     }
 
     return result
@@ -52,7 +46,7 @@ func (t *Test) IsSuccessful() bool {
 func (t *Test) AssertSync(assertFunction AssertFunction, timeOutMilliseconds int) {
     t.AssertCount++
 
-    if doAsyncTest(assertFunction, timeOutMilliseconds) {
+    if doLoopedTest(assertFunction, timeOutMilliseconds) {
         t.Passes++
     } else {
         errMessage := fmt.Sprintf("Never returned true after %dms when evaluating:", timeOutMilliseconds)
@@ -69,7 +63,7 @@ func (t *Test) AssertAsync(assertFunction AssertFunction, timeOutMilliseconds in
 
     t.AsyncAssertions.Add(1)
     go func(wg *sync.WaitGroup) {
-        if doAsyncTest(assertFunction, timeOutMilliseconds) {
+        if doLoopedTest(assertFunction, timeOutMilliseconds) {
             t.Passes++
         } else {
             t.addError(preemptiveErr)
