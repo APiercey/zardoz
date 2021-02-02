@@ -128,7 +128,7 @@ func (s Suite) Run() {
 
         if rc.ranTest.IsSuccessful() {
             color.Set(color.FgGreen)
-            fmt.Print(".")
+            fmt.Print("P")
         } else {
             color.Set(color.FgRed)
             fmt.Print("F")
