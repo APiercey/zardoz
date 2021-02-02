@@ -9,7 +9,7 @@ type Suite struct {
     runContexts []RunContext
 }
 
-func (s *Suite) Register(contextName string, testFunction TestFunction) {
+func (s *Suite) Test(contextName string, testFunction TestFunction) {
     rc := RunContext { contextName: contextName, testFunction: testFunction }
     s.runContexts = append(s.runContexts, rc)
 }
