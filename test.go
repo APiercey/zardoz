@@ -1,11 +1,9 @@
 package zardoz
 
 import "fmt"
-// import "github.com/fatih/color"
-// import "strings"
 import "time"
 import "runtime"
-// import "sync"
+import "sync"
 
 type AssertFunction func() bool
 
@@ -13,7 +11,7 @@ type Test struct {
     AssertCount int
     Passes int
     Failures int
-    AsyncAssertions []chan bool
+    AsyncAssertions sync.WaitGroup
     Errors []Error
 }
 
@@ -47,7 +45,7 @@ func (t *Test) Assert(expectation bool) {
     }
 }
 
-func (t Test) IsSuccessful() bool {
+func (t *Test) IsSuccessful() bool {
     return t.Failures == 0
 }
 
@@ -67,13 +65,10 @@ func (t *Test) AssertSync(assertFunction AssertFunction, timeOutMilliseconds int
 func (t *Test) AssertAsync(assertFunction AssertFunction, timeOutMilliseconds int) {
     t.AssertCount++
 
-    c := make(chan bool)
-
-    t.addAsyncAssertion(c)
-
     preemptiveErr := buildErrorFromCaller(fmt.Sprintf("Never returned true after %dms when evaluating:", timeOutMilliseconds))
 
-    go func(c chan bool) {
+    t.AsyncAssertions.Add(1)
+    go func(wg *sync.WaitGroup) {
         if doAsyncTest(assertFunction, timeOutMilliseconds) {
             t.Passes++
         } else {
@@ -81,11 +76,9 @@ func (t *Test) AssertAsync(assertFunction AssertFunction, timeOutMilliseconds in
             t.Failures++
         }
 
-        c <- true
-    }(c)
+        defer wg.Done()
+    }(&t.AsyncAssertions)
 }
-
-
 
 func (t *Test) handleFailure(errMessage string) {
      _, fn, line, _ := runtime.Caller(2)
@@ -102,10 +95,6 @@ func (t *Test) handleFailure(errMessage string) {
 
 func (t *Test) addError(err Error) {
     t.Errors = append(t.Errors, err)
-}
-
-func (t *Test) addAsyncAssertion(c chan bool) {
-    t.AsyncAssertions = append(t.AsyncAssertions, c)
 }
 
 func buildErrorFromCaller(errMessage string) Error {

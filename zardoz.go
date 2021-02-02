@@ -2,13 +2,13 @@ package zardoz
 
 type describeFunction func(*Suite) 
 
-func Describe(describe describeFunction) {
-    suite:= Suite { runContexts: []RunContext{} }
+func Describe(description string, describe describeFunction) {
+    suite:= Suite { runContexts: []RunContext{}, description: description }
 
     describe(&suite)
     suite.Run()
     
 }
 func NewSuite() Suite {
-    return Suite { runContexts: []RunContext{} }
+    return Suite { runContexts: []RunContext{}}
 }

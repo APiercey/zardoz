@@ -2,20 +2,22 @@ package zardoz
 
 import "fmt"
 import "github.com/fatih/color"
+// import "time"
 
 type TestFunction func(*Test) 
 
 type Suite struct {
+    description string
     runContexts []RunContext
 }
 
 func (s *Suite) Test(contextName string, testFunction TestFunction) {
-    rc := RunContext { contextName: contextName, testFunction: testFunction }
-    s.runContexts = append(s.runContexts, rc)
+    s.runContexts = append(s.runContexts, RunContext { contextName: contextName, testFunction: testFunction })
 }
 
 func printResultFromRanContexts(ranContexts []RunContext) {
-    for _, rc := range ranContexts {
+    for idx := range ranContexts {
+        rc := &ranContexts[idx]
         if rc.ranTest.IsSuccessful() { continue }
 
         color.Yellow("\n\nFailures:")
@@ -25,7 +27,9 @@ func printResultFromRanContexts(ranContexts []RunContext) {
 
     errorCount := 0
     successCount := 0
-    for _, rc := range ranContexts {
+    for idx := range ranContexts {
+        rc := &ranContexts[idx]
+
         if !rc.ranTest.IsSuccessful() {
             errorCount++
 
@@ -37,7 +41,8 @@ func printResultFromRanContexts(ranContexts []RunContext) {
     }
 
     fmt.Println()
-    for _, rc := range ranContexts {
+    for idx := range ranContexts {
+        rc := &ranContexts[idx]
         rc.printErrorLines()
     }
 
@@ -54,11 +59,55 @@ func printResultFromRanContexts(ranContexts []RunContext) {
 
     color.Set(color.FgRed)
     fmt.Printf("%d failures.", errorCount)
-
-
 }
 
-func executeContext(rc RunContext) RunContext {
+func printResultFromSuite(s *Suite) {
+    for idx := range s.runContexts {
+        rc := &s.runContexts[idx]
+        if rc.ranTest.IsSuccessful() { continue }
+
+        color.Yellow("\n\nFailures:")
+        fmt.Println()
+        break
+    }
+
+    errorCount := 0
+    successCount := 0
+    for idx := range s.runContexts {
+        rc := &s.runContexts[idx]
+
+        if !rc.ranTest.IsSuccessful() {
+            errorCount++
+
+            color.Yellow(fmt.Sprintf("  %d) %s %s", errorCount, s.description, rc.contextName))
+            rc.printErrorHints()
+        } else {
+            successCount++
+        }
+    }
+
+    fmt.Println()
+    for idx := range s.runContexts {
+        rc := &s.runContexts[idx]
+        rc.printErrorLines()
+    }
+
+    fmt.Println()
+
+    color.Set(color.FgBlue)
+    fmt.Printf("%d tests ran with ", len(s.runContexts))
+    
+    color.Set(color.FgGreen)
+    fmt.Printf("%d passes", successCount)
+
+    color.Set(color.FgBlue)
+    fmt.Print(" and ")
+
+    color.Set(color.FgRed)
+    fmt.Printf("%d failures.", errorCount)
+}
+
+func executeContext(rc *RunContext) {
      rc.ranTest = Test {
         AssertCount: 0,
         Passes: 0,
@@ -67,21 +116,17 @@ func executeContext(rc RunContext) RunContext {
 
     rc.testFunction(&rc.ranTest)
 
-    for _, c := range rc.ranTest.AsyncAssertions {
-        <- c
-    }
-
-    return rc
+    rc.ranTest.AsyncAssertions.Wait()
 }
 
 func (s Suite) Run() {
-    ranContexts := []RunContext{}
-
     fmt.Println("\nRunning...")
-    for _, rc := range s.runContexts {
-        ranContext := executeContext(rc)
 
-        if ranContext.ranTest.IsSuccessful() {
+    for idx := range s.runContexts {
+        rc := &s.runContexts[idx]
+        executeContext(rc)
+
+        if rc.ranTest.IsSuccessful() {
             color.Set(color.FgGreen)
             fmt.Print(".")
         } else {
@@ -89,10 +134,8 @@ func (s Suite) Run() {
             fmt.Print("F")
         }
         color.Unset()
-
-        ranContexts = append(ranContexts, ranContext)
     }
 
-    printResultFromRanContexts(ranContexts)
+    printResultFromSuite(&s)
     fmt.Println()
 }
