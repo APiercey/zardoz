@@ -3,13 +3,22 @@ package zardoz
 import "fmt"
 import "github.com/fatih/color"
 
-// import "time"
-
+type TestAroundFunction func()
 type TestFunction func(*Test)
 
 type Suite struct {
 	description string
 	runContexts []RunContext
+	beforeFunction TestAroundFunction
+	afterFunction TestAroundFunction
+}
+
+func (s *Suite) Before(fun TestAroundFunction) {
+	s.beforeFunction = fun
+}
+
+func (s *Suite) After(fun TestAroundFunction) {
+	s.afterFunction = fun
 }
 
 func (s *Suite) Test(contextName string, testFunction TestFunction) {
@@ -110,6 +119,8 @@ func printResultFromSuite(s *Suite) {
 
 	color.Set(color.FgRed)
 	fmt.Printf("%d failures.", errorCount)
+
+	color.Unset()
 }
 
 func executeContext(rc *RunContext) {
@@ -129,7 +140,10 @@ func (s Suite) Run() {
 
 	for idx := range s.runContexts {
 		rc := &s.runContexts[idx]
+
+		s.beforeFunction()
 		executeContext(rc)
+		s.afterFunction()
 
 		if rc.ranTest.IsSuccessful() {
 			color.Set(color.FgGreen)
