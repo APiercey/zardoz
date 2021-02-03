@@ -7,10 +7,10 @@ type TestAroundFunction func()
 type TestFunction func(*Test)
 
 type Suite struct {
-	description string
-	runContexts []RunContext
+	description    string
+	runContexts    []RunContext
 	beforeFunction TestAroundFunction
-	afterFunction TestAroundFunction
+	afterFunction  TestAroundFunction
 }
 
 func (s *Suite) Before(fun TestAroundFunction) {
