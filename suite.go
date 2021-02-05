@@ -7,18 +7,18 @@ type TestAroundFunction func()
 type TestFunction func(*Test)
 
 type Suite struct {
-	description    string
-	runContexts    []RunContext
-	beforeFunction TestAroundFunction
-	afterFunction  TestAroundFunction
+	description     string
+	runContexts     []RunContext
+	setupFunction   TestAroundFunction
+	cleanupFunction TestAroundFunction
 }
 
-func (s *Suite) Before(fun TestAroundFunction) {
-	s.beforeFunction = fun
+func (s *Suite) Setup(fun TestAroundFunction) {
+	s.setupFunction = fun
 }
 
-func (s *Suite) After(fun TestAroundFunction) {
-	s.afterFunction = fun
+func (s *Suite) Cleanup(fun TestAroundFunction) {
+	s.cleanupFunction = fun
 }
 
 func (s *Suite) Test(contextName string, testFunction TestFunction) {
@@ -141,9 +141,9 @@ func (s Suite) Run() {
 	for idx := range s.runContexts {
 		rc := &s.runContexts[idx]
 
-		s.beforeFunction()
+		s.setupFunction()
 		executeContext(rc)
-		s.afterFunction()
+		s.cleanupFunction()
 
 		if rc.ranTest.IsSuccessful() {
 			color.Set(color.FgGreen)

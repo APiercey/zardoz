@@ -3,7 +3,7 @@
 # ZARDOZ
 A Golang framework for testing asyncronous dependencies.
 
-## Instalation
+## Installation
 
 Pull the module into your GOPATH using
 ```
@@ -11,12 +11,11 @@ go get github.com/apiercey/zardoz
 ```
 
 ## Usage
-
 ZARDOZ can be imported like so:
 ```
 import z "github.com/APiercey/zardoz"
 ```
-ZARDOZ comes with three assertions for testing asyncronous code. Test blocks begin with a `Describe` block, which provides a test suite.
+ZARDOZ comes with [three assertions](https://github.com/APiercey/zardoz/tree/main#assertions) for testing asyncronous dependencies. Test blocks begin with a `Describe` block, which provides a test suite.
 
 ```
 func main() {
@@ -262,4 +261,36 @@ Failures:
 Assertion failed /Users/example-user/.go/src/example-tests/v1/main.go:44
 
 1 tests ran with 0 passes and 1 failures.
+```
+
+## Setup and Cleanup
+ZARDOZ allows you to run setup code or cleanup code, if you so wish. These are executed once per test.
+
+- `s.Setup` executed before the test.
+- `s.Cleanup` executed after the test.
+
+Examples
+```
+func main() {
+  z.Describe("Example External System", func(s *z.Suite) {
+      s.Setup(func () {
+          setup_my_dependency()
+      })
+      
+      // or
+      
+      s.Setup(setup_my_dependency)
+      
+      s.Test("can handle commands", test_some_command)
+      
+      s.Cleanup(func () {
+          cleanup_my_dependency()
+      })
+      
+      // or
+      
+      s.Cleanup(cleanup_my_dependency)
+      
+  })
+}
 ```
