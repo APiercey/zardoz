@@ -6,17 +6,16 @@ A Golang framework for testing asyncronous dependencies.
 Table of Contents
 =================
 
-   * [ZARDOZ](#zardoz)
-      * [Installation](#installation)
-      * [Usage](#usage)
-         * [Test](#test)
-         * [Assertions](#assertions)
-            * [t.Assert](#tassert)
-            * [t.AssertSync](#tassertsync)
-            * [t.AssertAsync](#tassertasync)
-         * [Working Example](#working-example)
-      * [Reading results](#reading-results)
-      * [Setup and Cleanup](#setup-and-cleanup)
+* [Installation](#installation)
+* [Usage](#usage)
+   * [Test](#test)
+   * [Assertions](#assertions)
+      * [t.Assert](#tassert)
+      * [t.AssertSync](#tassertsync)
+      * [t.AssertAsync](#tassertasync)
+   * [Working Example](#working-example)
+* [Reading results](#reading-results)
+* [Setup and Cleanup](#setup-and-cleanup)
 
 ## Installation
 
