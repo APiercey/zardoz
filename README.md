@@ -26,7 +26,7 @@ go get github.com/apiercey/zardoz
 
 ## Usage
 ZARDOZ can be imported like so:
-```golang
+```go
 import z "github.com/APiercey/zardoz"
 ```
 ZARDOZ comes with [three assertions](https://github.com/APiercey/zardoz/tree/main#assertions) for testing asyncronous dependencies. Test blocks begin with a `Describe` block, which provides a test suite.
