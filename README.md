@@ -1,7 +1,7 @@
 <img src="http://www.cineoutsider.com/reviews/pix/z/za/zardoz1.jpg" width="100%" alt="I am ZARDOZ">
 
 # ZARDOZ
-A Golang framework for testing asyncronous dependencies.
+(A Golang testing framework)[https://github.com/APiercey/zardoz] for testing asyncronous dependencies.
 
 Table of Contents
 =================
@@ -20,18 +20,18 @@ Table of Contents
 ## Installation
 
 Pull the module into your GOPATH using
-```
+```golang
 go get github.com/apiercey/zardoz
 ```
 
 ## Usage
 ZARDOZ can be imported like so:
-```
+```golang
 import z "github.com/APiercey/zardoz"
 ```
 ZARDOZ comes with [three assertions](https://github.com/APiercey/zardoz/tree/main#assertions) for testing asyncronous dependencies. Test blocks begin with a `Describe` block, which provides a test suite.
 
-```
+```golang
 func main() {
   z.Describe("Example External System", func(s *z.Suite) {
       s.Test("can turn lights on", test_light_turn_on)
@@ -45,7 +45,7 @@ A test can be written using anonymous functions or by passing in the function na
 
 Examples:
 
-```
+```golang
 func test_lego_car_turns_left(t *z.Test) {
     execute_turn_left_command()
 
@@ -59,7 +59,7 @@ s.Test("can turn left", test_lego_car_turns_left)
 
 or simply
 
-```
+```golang
 s.Test("can turn left", func (t *z.Test) {
     execute_turn_left_command()
 
@@ -81,7 +81,7 @@ ZARDOZ provides three assertions:
 Simple assertions like in other unit testing frameworks.
 
 Examples
-```
+```golang
 t.Assert(true) // passes
 t.Assert(false) // fails
 t.Assert(some_func_that_returns_boolean()) // depends on the returned value
@@ -95,7 +95,7 @@ If the predict should return _false_ it will try again.
 Multiple `t.AssertSync` assertions result will assert their conditions syncronously.
 
 Examples
-```
+```golang
 t.AssertSync(func() {
   return true
 }, 1_000) 
@@ -117,7 +117,7 @@ If the predict should return _false_ it will try again.
 Multiple `t.AssertSync` assertions result will assert their conditions asyncronously and can be used to observe conditions which take place within the same time frame.
 
 Examples
-```
+```golang
 t.AssertAsync(func() {
   return true
 }, 1_000) 
@@ -135,7 +135,7 @@ In the example above, the test will take a maximum time of roughly 1000ms to com
 ### Working Example
 Below is an example of testing IoT device using the MQTT protocol. The suite will send messaeges to a device and expects an asynchronous response.
 
-```
+```golang
 package main
 
 import "fmt"
@@ -231,7 +231,7 @@ After every test ZARDOZ will provide a summary of the number of tests ran, passe
 When tests fail, ZARDOZ will provide a preview of the offending assertion and as well as the path and line number under the summary.
 
 Example below:
-```
+```golang
 $ go run *.go
 
 Running...
@@ -284,7 +284,7 @@ ZARDOZ allows you to run setup code or cleanup code, if you so wish. These are e
 - `s.Cleanup` executed after the test.
 
 Examples
-```
+```golang
 func main() {
   z.Describe("Example External System", func(s *z.Suite) {
       s.Setup(func () {
