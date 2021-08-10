@@ -1,7 +1,7 @@
 <img src="http://www.cineoutsider.com/reviews/pix/z/za/zardoz1.jpg" width="100%" alt="I am ZARDOZ">
 
 # ZARDOZ
-(A Golang testing framework)[https://github.com/APiercey/zardoz] for testing asyncronous dependencies.
+[A Golang testing framework](https://github.com/APiercey/zardoz) for testing asyncronous dependencies.
 
 Table of Contents
 =================
